@@ -88,9 +88,9 @@ class SixelDcsHandler : DcsHandler {
     }
     
     // read palette from first line
-    private func parsePalette(_ p: inout Int) -> [Int: Color] {
+    private func parsePalette(_ p: inout Int) -> [Int: STColor] {
         // palette is sparse where we use default color values for unspecified entries
-        var palette = [Int: Color]()
+        var palette = [Int: STColor]()
 
         // skip to # to read palette
         skipToCharacter(&p, "#")
@@ -115,7 +115,7 @@ class SixelDcsHandler : DcsHandler {
                 var blue = CGFloat(0)
                 color.getRed(&red, green: &green, blue: &blue, alpha: nil)
                 
-                palette[index] = Color(red: UInt16(65535.0 * red),
+                palette[index] = STColor(red: UInt16(65535.0 * red),
                                        green: UInt16(65535.0 * green),
                                        blue: UInt16(65535.0 * blue))
             }
@@ -126,7 +126,7 @@ class SixelDcsHandler : DcsHandler {
                 let green = 0.01 * CGFloat(color[3]) // percentage from 0 to 100
                 let blue = 0.01 * CGFloat(color[4]) // percentage from 0 to 100
                 
-                palette[index] = Color(red: UInt16(65535.0 * red),
+                palette[index] = STColor(red: UInt16(65535.0 * red),
                                        green: UInt16(65535.0 * green),
                                        blue: UInt16(65535.0 * blue))
             }
@@ -212,7 +212,7 @@ class SixelDcsHandler : DcsHandler {
         return bitmap
     }
     
-    private func colorForIndex(_ index: Int, _ palette: [Int: Color]) -> Color? {
+    private func colorForIndex(_ index: Int, _ palette: [Int: STColor]) -> STColor? {
         guard index >= 0 else {
             // explicit transparency
             return nil
@@ -228,7 +228,7 @@ class SixelDcsHandler : DcsHandler {
         return terminal.defaultAnsiColors[standardIndex]
     }
     
-    private func buildImage(palette: [Int: Color], bitmap: [[Int]]) -> TTImage? {
+    private func buildImage(palette: [Int: STColor], bitmap: [[Int]]) -> TTImage? {
         // determine size of image
         let height = bitmap.count
         var width = 0

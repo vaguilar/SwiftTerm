@@ -145,18 +145,18 @@ public protocol TerminalDelegate {
     /**
      * The view should try to set the foreground color to the provided color
      */
-    func setForegroundColor (source: Terminal, color: Color)
+    func setForegroundColor (source: Terminal, color: STColor)
     
     /**
      * The view should try to set the background color to the provided color
      */
-    func setBackgroundColor (source: Terminal, color: Color)
+    func setBackgroundColor (source: Terminal, color: STColor)
     
     /**
      * This should return the current foreground and background colors to
      * report.
      */
-    func getColors (source: Terminal) -> (foreground: Color, background: Color)
+    func getColors (source: Terminal) -> (foreground: STColor, background: STColor)
 }
 
 /**
@@ -231,11 +231,11 @@ open class Terminal {
     var lineFeedMode = true
     
     // Installed colors are the 16 values that can be changed dynamically by the host
-    var installedColors: [Color]
+    var installedColors: [STColor]
     // The blueprint for the colors, computed based on the installed colors
-    var defaultAnsiColors: [Color]
+    var defaultAnsiColors: [STColor]
     // The active set of colors (based on the blueprint)
-    var ansiColors: [Color]
+    var ansiColors: [STColor]
     
     // Control codes provides an API to send either 8bit sequences or 7bit sequences for C0 and C1 depending on the terminal state
     var cc: CC
@@ -285,7 +285,7 @@ open class Terminal {
     var settingFgColor = false, settingBgColor = false
 
     /// This tracks the current foreground color for the application.
-    public var foregroundColor: Color = Color.defaultForeground {
+    public var foregroundColor: STColor = STColor.defaultForeground {
         didSet {
             if settingFgColor {
                 return
@@ -296,7 +296,7 @@ open class Terminal {
         }
     }
     /// This tracks the current background color for the application.
-    public var backgroundColor: Color = Color.defaultBackground {
+    public var backgroundColor: STColor = STColor.defaultBackground {
         didSet {
             if settingBgColor {
                 return
@@ -392,8 +392,8 @@ open class Terminal {
     
     public init (delegate : TerminalDelegate, options: TerminalOptions = TerminalOptions.default)
     {
-        installedColors = Color.defaultInstalledColors
-        defaultAnsiColors = Color.setupDefaultAnsiColors (initialColors: installedColors)
+        installedColors = STColor.defaultInstalledColors
+        defaultAnsiColors = STColor.setupDefaultAnsiColors (initialColors: installedColors)
         ansiColors = defaultAnsiColors
         tdel = delegate
         self.options = options
@@ -411,13 +411,13 @@ open class Terminal {
     ///
     /// - Parameter colors: this should be an array of 16 values that correspond to the 16 ANSI colors,
     /// if the array does not contain 16 elements, it will not do anything
-    public func installPalette (colors: [Color])
+    public func installPalette (colors: [STColor])
     {
         if colors.count != 16 {
             return
         }
         installedColors = colors
-        defaultAnsiColors = Color.setupDefaultAnsiColors (initialColors: installedColors)
+        defaultAnsiColors = STColor.setupDefaultAnsiColors (initialColors: installedColors)
         ansiColors = defaultAnsiColors
     }
     
@@ -1279,7 +1279,7 @@ open class Terminal {
         
             let end = data [parsePos...].firstIndex(of: UInt8(ascii: ";")) ?? data.endIndex
             
-            if let newColor = Color.parseColor (data [parsePos..<end]) {
+            if let newColor = STColor.parseColor (data [parsePos..<end]) {
                 ansiColors [color] = newColor
                 tdel.colorChanged (source: self, idx: color)
             }
@@ -1291,7 +1291,7 @@ open class Terminal {
     
     func oscSetTextForeground (_ data: ArraySlice<UInt8>)
     {
-        if let foreground = Color.parseColor(data) {
+        if let foreground = STColor.parseColor(data) {
             foregroundColor = foreground
             tdel.setForegroundColor(source: self, color: foreground)
         }
@@ -1299,7 +1299,7 @@ open class Terminal {
 
     func oscSetTextBackground (_ data: ArraySlice<UInt8>)
     {
-        if let background = Color.parseColor(data) {
+        if let background = STColor.parseColor(data) {
             backgroundColor = background
             tdel.setBackgroundColor(source: self, color: background)
         }
@@ -4336,17 +4336,17 @@ public extension TerminalDelegate {
         
     }
     
-    func getColors (source: Terminal) -> (foreground: Color, background: Color)
+    func getColors (source: Terminal) -> (foreground: STColor, background: STColor)
     {
         return (source.foregroundColor, source.backgroundColor)
     }
     
-    func setForegroundColor (source: Terminal, color: Color)
+    func setForegroundColor (source: Terminal, color: STColor)
     {
         source.foregroundColor = color
     }
     
-    func setBackgroundColor (source: Terminal, color: Color)
+    func setBackgroundColor (source: Terminal, color: STColor)
     {
         source.backgroundColor = color
     }
